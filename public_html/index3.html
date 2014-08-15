@@ -364,10 +364,19 @@ function performTests(config) {
         connection.close();
     };
     
+    connection.resources.getConnectionStats = 'getConnectionStats.js';
     connection.onconnected = function(event) {
         appendTR('ICE connection is established in session: ' + config.sessionid, 'rgb(199, 255, 194)');
         th.innerHTML += ' (<span class="green-background">succeeded</span>)';
-        connection.close();
+        
+        event.peer.getConnectionStats(function(result) {
+            var remotePeer = result.connectionType.remote;
+            appendTR('Remote peer is conected using transport: <span clas="gray-background">' + result.connectionType.transport + '</span>');
+            appendTR('Ipv4 or Ipv6 address used to connect remote peer:  <span clas="gray-background">' + remotePeer.ipAddress + '</span>');
+            appendTR('Remote peer connection using STUN(reflexive) or TURN(relay):  <span clas="gray-background">' + remotePeer.candidateType + '</span>');
+        });
+        
+        // connection.close();
     };
     
     connection.onCustomMessage = function(message) {

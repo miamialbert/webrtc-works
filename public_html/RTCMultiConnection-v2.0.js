@@ -1540,14 +1540,16 @@
 
                         partOfScreenCapturer();
                     },
-                    getStats: function(callback, interval) {
+                    getConnectionStats: function(callback, interval) {
                         if (!callback) throw 'callback is mandatory.';
 
-                        if (!window.getRTCMultiConnectionStats) {
-                            loadScript(connection.resources.getRTCMultiConnectionStats, invoker);
+                        if (!window.getConnectionStats) {
+                            loadScript(connection.resources.getConnectionStats, invoker);
                         } else invoker();
 
                         function invoker() {
+                            peer.connection.getConnectionStats(callback, interval);
+                            /*
                             getRTCMultiConnectionStats({
                                 peer: peer.connection,
                                 callback: callback,
@@ -1555,6 +1557,7 @@
                                 connection: connection,
                                 targetuser: _config.userid
                             });
+                            */
                         }
                     }
                 };
@@ -5205,7 +5208,7 @@
             firebase: 'https://cdn.webrtc-experiment.com/firebase.js',
             firebaseio: 'https://chat.firebaseIO.com/',
             muted: 'https://cdn.webrtc-experiment.com/images/muted.png',
-            getRTCMultiConnectionStats: 'https://cdn.webrtc-experiment.com/getRTCMultiConnectionStats.js'
+            getConnectionStats: 'https://cdn.webrtc-experiment.com/getConnectionStats.js'
         };
 
         // as @serhanters proposed in #225
@@ -5265,7 +5268,7 @@
         };
 
         connection.onconnected = function(event) {
-            // event.peer.addStream || event.peer.getStats
+            // event.peer.addStream || event.peer.getConnectionStats
             log('Peer connection has been established between you and', event.userid);
         };
 
