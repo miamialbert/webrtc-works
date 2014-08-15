@@ -43,6 +43,7 @@ var isChrome = browser.name == 'Chrome';
 var isFirefox = browser.name == 'Firefox';
 
 var DetectRTC = {
+    browser: browser,
     hasMicrophone: false,
     hasSpeakers: false,
     hasWebcam: false,
@@ -50,10 +51,10 @@ var DetectRTC = {
     isWebRTCSupported: !!window.webkitRTCPeerConnection || !!window.mozRTCPeerConnection,
     isAudioContextSupported: (!!window.AudioContext || !!window.webkitAudioContext) && !!AudioContext.prototype.createMediaStreamSource,
 
-    isScreenCapturingSupported: (isFirefox && browser.version >= 34) ||
+    isScreenCapturingSupported: (isFirefox && browser.version >= 33) ||
         (isChrome && browser.version >= 26 && (isNodeWebkit ? true : location.protocol == 'https:')),
 
-    isDesktopCapturingSupported: (isFirefox && browser.version >= 34) || false,
+    isDesktopCapturingSupported: (isFirefox && browser.version >= 33) || (isChrome && browser.version >= 34) || isNodeWebkit || false,
 
     isSctpDataChannelsSupported: isFirefox || (isChrome && browser.version >= 25),
     isRtpDataChannelsSupported: isChrome && browser.version >= 31,
@@ -64,6 +65,36 @@ var DetectRTC = {
     isTCPRequestsAllowed: false,
     isUDPRequestsAllowed: false
 };
+
+var isOpera = !!window.opera || navigator.userAgent.indexOf(' OPR/') >= 0;
+var isFirefox = typeof InstallTrigger !== 'undefined';
+var isSafari = Object.prototype.toString.call(window.HTMLElement).indexOf('Constructor') > 0;
+var isChrome = !!window.chrome && !isOpera;
+var isIE = !!document.documentMode;
+    
+var isMobileDevice = !!navigator.userAgent.match(/Android|iPhone|iPad|iPod|BlackBerry|IEMobile/i);
+
+// detect node-webkit
+var isNodeWebkit = !!(window.process && (typeof window.process == 'object') && window.process.versions && window.process.versions['node-webkit']);
+
+DetectRTC.UA = {
+    Firefox: isFirefox,
+    Chrome: isChrome,
+    Mobile: isMobileDevice,
+    Version: browser.version,
+    NodeWebkit: isNodeWebkit,
+    Safari: isSafari,
+    InternetExplorer: isIE,
+    Opera: isOpera
+};
+
+var OSName="Unknown OS";
+if (navigator.appVersion.indexOf("Win")!=-1) OSName="Windows";
+if (navigator.appVersion.indexOf("Mac")!=-1) OSName="MacOS";
+if (navigator.appVersion.indexOf("X11")!=-1) OSName="UNIX";
+if (navigator.appVersion.indexOf("Linux")!=-1) OSName="Linux";
+
+DetectRTC.OSName = OSName;
 
 (function() {
     DetectRTC.MediaDevices = [];

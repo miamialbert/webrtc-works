@@ -138,13 +138,15 @@ div.dhtmlx_window_active, div.dhx_modal_cover_dv {
 </head>
 <body>
 <h1>Manual Tests</h1>
+<script src="/DetectRTC.js"></script>
 <script src="/socketio.js"></script>
 <script src="/RTCMultiConnection-v2.0.js"></script>
 <script>
+
 var socket = io.connect();
 
 socket.on('disconnect', function() {
-    alert('Maybe browserstack reported that automation testing time is expired; because socekt.io is disconnected; and it seems that nodejs server is down.');
+    console.error('socket.io connection is disconnected.');
 });
  
 function initTests() {
@@ -389,7 +391,42 @@ function performTests(config) {
     };    
 }
 
+featuresTests();
 initTests();
+
+function featuresTests() {
+    var datagrid = document.createElement('div');
+    datagrid.className = 'datagrid';
+    document.body.appendChild(datagrid);
+    
+    var table = document.createElement('table');
+    table.innerHTML = '<thead><tr><th></th></tr></thead><tbody></tbody>';
+    datagrid.appendChild(table);
+    table = table.querySelector('tbody');
+    
+    var th = datagrid.querySelector('th');
+    th.innerHTML = 'WebRTC Features Detection (<span class="gray-background">idle</span>) <button>Test</button>';
+    
+    function appendTR(value, background) {
+        var tr = document.createElement('tr');
+        tr.innerHTML = '<td style="width:100%;">' + value + '</td>';
+        table.appendChild(tr);
+        if(background) {
+            tr.style.background = background;
+        }
+    }
+    
+    th.querySelector('button').onclick = function() {
+        this.disabled = true;
+        
+        if(DetectRTC.UA.Safari || DetectRTC.UA.InternetExplorer) {
+            appendTR('Is WebRTC Supported? <span class="green-background">By using Java-Applet or ActiveX Plugins</span>');
+        }
+        else appendTR('Is WebRTC Supported? <span class="' + (DetectRTC.isWebRTCSupported ? 'green-background' : 'red-background') + '">' + DetectRTC.isWebRTCSupported + '</span>');
+        appendTR('Is WebRTC Screen Capturing Supported? Full Screen: <span class="' + (DetectRTC.isScreenCapturingSupported ? 'green-background' : 'red-background') + '">' + DetectRTC.isScreenCapturingSupported + '</span> Desktop: <span class="' + (DetectRTC.isDesktopCapturingSupported ? 'green-background' : 'red-background') + '">' + DetectRTC.isDesktopCapturingSupported + '</span>');
+        appendTR('Browser info <span class="green-background">' + DetectRTC.browser.name + ' (version: ' + DetectRTC.browser.version + ')</span> Is Desktop? <span class="' + (!DetectRTC.isMobileDevice ? 'green-background' : 'red-background') + '">' + !DetectRTC.isMobileDevice + ' </span> Operating System: <span class="green-background">' + DetectRTC.OSName + ' </span>');
+    };
+}
 </script>
 </body>
 </html>
