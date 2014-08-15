@@ -1,0 +1,92 @@
+﻿<script src="RTCMultiConnection-v2.0.js"></script>
+<script>
+(function () {
+    var params = {},
+        r = /([^&=]+)=?([^&]*)/g;
+
+    function d(s) {
+        return decodeURIComponent(s.replace(/\+/g, ' '));
+    }
+
+    var match, search = window.location.search;
+    while (match = r.exec(search.substring(1)))
+        params[d(match[1])] = d(match[2]);
+
+    window.params = params;
+})();
+
+var sessions = JSON.parse(window.params.sessions);
+
+for(var session in sessions) {
+    performTests(sessions[session]);
+}
+
+function performTests(config) {
+    var connection = new RTCMultiConnection(config.sessionid);
+    for(var c in config) {
+        connection[c] = config[c];
+    }
+    
+    var SIGNALING_SERVER = 'wss://wsnodejs.nodejitsu.com:443';
+    connection.openSignalingChannel = function(config) {
+        config.channel = config.channel || this.channel;
+        var websocket = new WebSocket(SIGNALING_SERVER);
+        websocket.channel = config.channel;
+        websocket.onopen = function() {
+            websocket.push(JSON.stringify({
+                open: true,
+                channel: config.channel
+            }));
+            if (config.callback)
+                config.callback(websocket);
+        };
+        websocket.onmessage = function(event) {
+            config.onmessage(JSON.parse(event.data));
+        };
+        websocket.push = websocket.send;
+        websocket.send = function(data) {
+            websocket.push(JSON.stringify({
+                data: data,
+                channel: config.channel
+            }));
+        };
+    };
+    
+    connection.onopen =  function(event) {
+        connection.sendCustomMessage('onopen');
+        connection.close();
+    };
+    
+    connection.onfailed = function() {
+        connection.sendCustomMessage('onfailed');
+        connection.close();
+    };
+    
+    connection.ondisconnected = function() {
+        connection.sendCustomMessage('ondisconnected');
+        connection.close();
+    };
+    
+    connection.onclose = function() {
+        connection.sendCustomMessage('onclose');
+        connection.close();
+    };
+    
+    connection.onconnected = function(event) {
+        connection.sendCustomMessage('onconnected');
+        connection.close();
+    };
+    
+    connection.onstream = function(event) {
+        if(event.type == 'local') return;
+        connection.sendCustomMessage('onstream [remote]');
+    };
+    
+    connection.join({
+        sessionid: config.sessionid,
+        userid: config.sessionid,
+        extra: {},
+        session: { data: true }
+    });
+}
+</script>

@@ -1,0 +1,34 @@
+{
+  "name": "Albert",
+  "version": "0.0.1",
+  "description": "WebRTC features detection tests.",
+  "main": "server.js",
+  "dependencies": {
+    "stun": "^0.0.2",
+    "socket.io": "^0.9.0",
+    "browserstack-webdriver": "^2.41.1"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "node server",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/miamialbert/webrtc-works"
+  },
+  "keywords": [
+    "DetectRTC",
+    "WebRTC",
+    "RTCWeb",
+    "STUN",
+    "TURN",
+    "Features-Detection"
+  ],
+  "author": "Muaz Khan <muazkh@gmail.com>",
+  "license": "BSD",
+  "bugs": {
+    "url": "https://github.com/miamialbert/webrtc-works/issues"
+  },
+  "homepage": "https://github.com/miamialbert/webrtc-works"
+}

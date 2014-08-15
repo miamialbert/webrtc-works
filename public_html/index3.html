@@ -1,0 +1,395 @@
+﻿<html>
+<head>
+<title>Manual Tests</title>
+<style>
+.datagrid table {
+    border-collapse: collapse;
+    text-align: left;
+    width: 100%;
+}
+
+.datagrid {
+    font: normal 12px/150% Arial, Helvetica, sans-serif;
+    background: #fff;
+    overflow: hidden;
+    border: 1px solid #006699;
+    -webkit-border-radius: 3px;
+    -moz-border-radius: 3px;
+    border-radius: 3px;
+    
+    margin-bottom: 30px;
+}
+
+.datagrid table td, .datagrid table th {
+    padding: 3px 10px;
+}
+
+.datagrid table thead th {
+    background: -webkit-gradient( linear, left top, left bottom, color-stop(0.05, #006699), color-stop(1, #00557F) );
+    background: -moz-linear-gradient( center top, #006699 5%, #00557F 100% );
+    filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#006699', endColorstr='#00557F');
+    background-color: #006699;
+    color: #ffffff;
+    font-size: 15px;
+    font-weight: bold;
+    border-left: 1px solid #0070A8;
+}
+
+.datagrid table thead th:first-child {
+    border: none;
+}
+
+.datagrid table tbody td {
+    color: #00496B;
+    border-left: 1px solid #E1EEF4;
+    font-size: 12px;
+    font-weight: normal;
+}
+
+.datagrid table tbody .alt td {
+    background: #E1EEF4;
+    color: #00496B;
+}
+
+.datagrid table tbody td:first-child {
+    border-left: none;
+}
+
+.datagrid table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.datagrid table tfoot td div {
+    border-top: 1px solid #006699;
+    background: #E1EEF4;
+}
+
+.datagrid table tfoot td {
+    padding: 0;
+    font-size: 12px;
+}
+
+.datagrid table tfoot td div {
+    padding: 2px;
+}
+
+.datagrid table tfoot td ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    text-align: right;
+}
+
+.datagrid table tfoot  li {
+    display: inline;
+}
+
+.datagrid table tfoot li a {
+    text-decoration: none;
+    display: inline-block;
+    padding: 2px 8px;
+    margin: 1px;
+    color: #FFFFFF;
+    border: 1px solid #006699;
+    -webkit-border-radius: 3px;
+    -moz-border-radius: 3px;
+    border-radius: 3px;
+    background: -webkit-gradient( linear, left top, left bottom, color-stop(0.05, #006699), color-stop(1, #00557F) );
+    background: -moz-linear-gradient( center top, #006699 5%, #00557F 100% );
+    filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#006699', endColorstr='#00557F');
+    background-color: #006699;
+}
+
+.datagrid table tfoot ul.active, .datagrid table tfoot ul a:hover {
+    text-decoration: none;
+    border-color: #006699;
+    color: #FFFFFF;
+    background: none;
+    background-color: #00557F;
+}
+
+tr {
+    border-bottom: 1px solid #006699;
+    font-family: Courier New;
+}
+
+div.dhtmlx_window_active, div.dhx_modal_cover_dv {
+    position: fixed !important;
+}
+
+.gray-background {
+    display: inline-block;
+    background: gray;
+    color: white;
+}
+
+.green-background {
+    display: inline-block;
+    background: green;
+    color: white;
+}
+
+.red-background {
+    display: inline-block;
+    background: red;
+    color: white;
+}
+</style>
+</head>
+<body>
+<h1>Manual Tests</h1>
+<script src="/socketio.js"></script>
+<script src="/RTCMultiConnection-v2.0.js"></script>
+<script>
+var socket = io.connect();
+
+socket.on('disconnect', function() {
+    alert('Maybe browserstack reported that automation testing time is expired; because socekt.io is disconnected; and it seems that nodejs server is down.');
+});
+ 
+function initTests() {
+    var sessions = {
+        'stun-data-session': {
+            session: { data: true },
+            sessionid: 'stun-data-session', // this.toString()
+            getExternalIceServers: false,
+            iceServers: [{ url: 'stun:stun.anyfirewall.com:3478' }],
+            sdpConstraints: {
+                mandatory: {
+                    OfferToReceiveAudio: false,
+                    OfferToReceiveVideo: false
+                },
+                optional: []
+            },
+            candidates: {
+                turn: false,
+                stun: true,
+                host: false
+            }
+        },
+        'turn-data-session': {
+            session: { data: true },
+            sessionid: 'turn-data-session',
+            getExternalIceServers: false,
+            iceServers: [{
+                url: 'turn:turn.bistri.com:80',
+                credential: 'homeo',
+                username: 'homeo'
+            }],
+            sdpConstraints: {
+                mandatory: {
+                    OfferToReceiveAudio: false,
+                    OfferToReceiveVideo: false
+                },
+                optional: []
+            },
+            candidates: {
+                turn: true,
+                stun: false,
+                host: false
+            }
+        },
+        'turn-audio-session': {
+            session: {
+                audio: true
+            },
+            sessionid: 'turn-audio-session',
+            getExternalIceServers: false,
+            iceServers: [{
+                url: 'turn:turn.bistri.com:80',
+                credential: 'homeo',
+                username: 'homeo'
+            }],
+            sdpConstraints: {
+                mandatory: {
+                    OfferToReceiveAudio: true,
+                    OfferToReceiveVideo: false
+                },
+                optional: []
+            },
+            candidates: {
+                turn: true,
+                stun: false,
+                host: false
+            }
+        },
+        'turn-audio-video-session': {
+            session: {
+                audio: true,
+                video: true
+            },
+            sessionid: 'turn-audio-video-session',
+            getExternalIceServers: false,
+            iceServers: [{
+                url: 'turn:turn.bistri.com:80',
+                credential: 'homeo',
+                username: 'homeo'
+            }],
+            sdpConstraints: {
+                mandatory: {
+                    OfferToReceiveAudio: true,
+                    OfferToReceiveVideo: true
+                },
+                optional: []
+            },
+            candidates: {
+                turn: true,
+                stun: false,
+                host: false
+            }
+        },
+        'turn-screen-session': {
+            session: {
+                screen: true,
+                oneway: true
+            },
+            sessionid: 'turn-screen-session',
+            getExternalIceServers: false,
+            iceServers: [{
+                url: 'turn:turn.bistri.com:80',
+                credential: 'homeo',
+                username: 'homeo'
+            }],
+            sdpConstraints: {
+                mandatory: {
+                    OfferToReceiveAudio: false,
+                    OfferToReceiveVideo: true
+                },
+                optional: []
+            },
+            candidates: {
+                turn: true,
+                stun: false,
+                host: false
+            }
+        }
+    };
+    
+    for(var session in sessions) {
+        performTests(sessions[session]);
+    }
+    
+    socket.emit('test', JSON.stringify(sessions));
+}
+
+function performTests(config) {
+    config.sessionid += '-' + new RTCMultiConnection().token();
+    
+    var datagrid = document.createElement('div');
+    datagrid.className = 'datagrid';
+    document.body.appendChild(datagrid);
+    
+    var table = document.createElement('table');
+    table.innerHTML = '<thead><tr><th>' + config.sessionid + '</th></tr></thead><tbody></tbody>';
+    datagrid.appendChild(table);
+    table = table.querySelector('tbody');
+    
+    var th = datagrid.querySelector('th');
+    th.innerHTML = config.sessionid + ' (<span class="gray-background">idle</span>) <button>Test</button>';    
+
+    function appendTR(value, background) {
+        var tr = document.createElement('tr');
+        tr.innerHTML = '<td style="width:100%;">' + value + '</td>';
+        table.appendChild(tr);
+        if(background) {
+            tr.style.background = background;
+        }
+    }
+
+    appendTR('Performing test for session: ' + config.sessionid);
+    
+    var connection = new RTCMultiConnection(config.sessionid);
+    for(var c in config) {
+        connection[c] = config[c];
+    }
+    
+    connection.userid = connection.sessionid;
+    
+    var SIGNALING_SERVER = 'wss://wsnodejs.nodejitsu.com:443';
+    connection.openSignalingChannel = function(config) {
+        config.channel = config.channel || this.channel;
+        var websocket = new WebSocket(SIGNALING_SERVER);
+        websocket.channel = config.channel;
+        websocket.onopen = function() {
+            websocket.push(JSON.stringify({
+                open: true,
+                channel: config.channel
+            }));
+            if (config.callback)
+                config.callback(websocket);
+        };
+        websocket.onmessage = function(event) {
+            config.onmessage(JSON.parse(event.data));
+        };
+        websocket.push = websocket.send;
+        websocket.send = function(data) {
+            websocket.push(JSON.stringify({
+                data: data,
+                channel: config.channel
+            }));
+        };
+    };
+    
+    connection.onRequest = function(request) {
+        connection.accept(request);
+        
+        appendTR('Received participation request in session: ' + config.sessionid);
+    };
+    
+    connection.onopen =  function(event) {
+        appendTR('Data connection has been opened in session: ' + config.sessionid, 'rgb(199, 255, 194)');
+        // socket.emit('quit-drive');
+        
+        th.innerHTML += ' (<span class="green-background">succeeded</span>)';
+        connection.close();
+    };
+    
+    connection.onfailed = function() {
+        appendTR('ICE connectivity check failed in session: ' + config.sessionid, 'rgb(255, 194, 194)');
+        th.innerHTML += ' (<span class="red-background">failed</span>)';
+        connection.close();
+    };
+    
+    connection.ondisconnected = function() {
+        appendTR('ICE is disconnected in session: ' + config.sessionid, 'rgb(255, 194, 194)');
+        th.innerHTML += ' (<span class="red-background">failed</span>)';
+        connection.close();
+    };
+    
+    connection.onclose = function() {
+        appendTR('Data connection is closed in session: ' + config.sessionid, 'rgb(255, 194, 194)');
+        th.innerHTML += ' (<span class="red-background">test-closed</span>)';
+        connection.close();
+    };
+    
+    connection.onconnected = function(event) {
+        appendTR('ICE connection is established in session: ' + config.sessionid, 'rgb(199, 255, 194)');
+        th.innerHTML += ' (<span class="green-background">succeeded</span>)';
+        connection.close();
+    };
+    
+    connection.onCustomMessage = function(message) {
+        appendTR('Custom Message: Remote peer received event: <span class="' + (message.match(/onfailed|onclose|ondisconnected/g) ? 'red' : 'green') + '-background">' + message + '</span>');
+    };
+    
+    connection.onleave = function() {
+        appendTR('Remote peer left the session: ' + config.sessionid);
+        th.innerHTML += ' (<span class="red-background">left</span>)';
+    };
+    
+    connection.onstream = connection.onstreamended = function() {};
+    
+    th.querySelector('button').onclick = function() {
+        this.disabled = true;
+        th.innerHTML = config.sessionid + ' (<span class="gray-background">checking..</span>)';
+        
+        connection.open({
+            dontTransmit: true
+        });
+    };    
+}
+
+initTests();
+</script>
+</body>
+</html>

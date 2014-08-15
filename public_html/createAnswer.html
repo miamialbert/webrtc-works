@@ -1,0 +1,94 @@
+﻿<script>         
+var sender = (Math.random() * 1000).toString().replace('.', '');
+
+var answerer, answererDataChannel;
+
+window.addEventListener('message', function(event) {
+    var message = event.data;
+
+    if (message.offerArgs) {
+        message.offerArgs = JSON.parse(message.offerArgs);
+        console.log('iframe-args', message.offerArgs);
+        connectPeerConnection(message.offerArgs);
+    }
+    if (message.ice && message.sender != sender) {
+        message.ice = JSON.parse(message.ice);
+        console.log('added-ice-iframe', message.ice.candidate);
+        if (answerer) answerer.addIceCandidate(
+            new RTCIceCandidate(message.ice)
+        );
+    }
+});
+
+var RTCPeerConnection = window.mozRTCPeerConnection || window.webkitRTCPeerConnection;
+var RTCSessionDescription = window.mozRTCSessionDescription || window.RTCSessionDescription;
+var RTCIceCandidate = window.mozRTCIceCandidate || window.RTCIceCandidate;
+
+function connectPeerConnection(args) {
+    var host = typeof args.stun == 'undefined';
+    var stun = typeof args.stun != 'undefined' ? args.stun : true;
+
+    var tcp = typeof args.tcp != 'undefined' ? args.tcp : true;
+    var udp = typeof args.udp != 'undefined' ? args.udp : true;
+
+    var iceServers = {
+        iceServers: stun ? [{
+            url: 'stun:stun.l.google.com:19302'
+        }] : []
+    };
+
+    var mediaConstraints = {
+        optional: [],
+        mandatory: {
+            OfferToReceiveAudio: false,
+            OfferToReceiveVideo: false
+        }
+    };
+
+    answerer = new RTCPeerConnection(iceServers);
+
+    answerer.onicecandidate = function(e) {
+        if (!e || !e.candidate) return;
+
+        var ice = e.candidate;
+        
+        if (!udp && ice.candidate.indexOf(' udp ') != -1) return;
+            if (!tcp && ice.candidate.indexOf(' tcp ') != -1) return;
+
+            if (host && ice.candidate.indexOf(' typ host ') == -1) return;
+            if (stun && ice.candidate.indexOf(' typ srflx ') == -1) return;
+
+        window.postMessage({
+            ice: JSON.stringify(ice),
+            sender: sender
+        }, '*')
+    };
+
+    answererDataChannel = answerer.createDataChannel('RTCDataChannel', {});
+
+    answerer.oniceconnectionstatechange = function() {
+        console.log('iframe-oniceconnectionstatechange', JSON.stringify({
+            iceConnectionState: answerer.iceConnectionState,
+            iceGatheringState: answerer.iceGatheringState,
+            signalingState: answerer.signalingState
+        }, null, '\t'));
+    };
+
+    console.log('iframe:setting remote descriptions', args.sdp.sdp);
+    answerer.setRemoteDescription(new RTCSessionDescription(args.sdp), onSdpSuccess, onSdpFailure);
+
+    answerer.createAnswer(function(sessionDescription) {
+        answerer.setLocalDescription(sessionDescription);
+        window.postMessage({
+            sdp: JSON.stringify(sessionDescription),
+            sender: sender
+        }, '*')
+    }, onSdpFailure, mediaConstraints);
+
+    function onSdpFailure(error) {
+        console.error(error);
+    }
+
+    function onSdpSuccess() {}
+}
+</script>
