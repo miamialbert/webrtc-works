@@ -8,15 +8,15 @@
 // _____________________
 // getConnectionStats.js
 
+// an abstraction layer runs top over RTCPeerConnection.getStats API
+// cross-browser compatible solution
+// http://dev.w3.org/2011/webrtc/editor/webrtc.html#dom-peerconnection-getstats
+
 /*
-peer._getStats(function(results) {
-    results.forEach(function(result) {
-        result.availBandwidth
-        result.usedBandwidth
-        result.packetsDroppped
-        result.mLine
-        result.
-    });
+peer.getConnectionStats(function(result) {
+    result.connectionType.remote.ipAddress
+    result.connectionType.remote.candidateType
+    result.connectionType.transport
 });
 */
 
@@ -112,6 +112,8 @@ peer._getStats(function(results) {
                             googTransmitBitrate: res.googTransmitBitrate
                         };
                     }
+                    
+                    // res.googActiveConnection means either STUN or TURN is used.
 
                     if (res.type == 'googCandidatePair' && res.googActiveConnection == 'true') {
                         result.connectionType = {
@@ -140,6 +142,8 @@ peer._getStats(function(results) {
         // a wrapper around getStats which hides the differences (where possible)
         // following code-snippet is taken from somewhere on the github
         function _getStats(cb) {
+            // if !peer or peer.signalingState == 'closed' then return;
+            
             if (!!navigator.mozGetUserMedia) {
                 peer.getStats(
                     function (res) {

@@ -6,7 +6,8 @@
   "dependencies": {
     "stun": "^0.0.2",
     "socket.io": "^0.9.0",
-    "browserstack-webdriver": "^2.41.1"
+    "browserstack-webdriver": "^2.41.1",
+    "selenium-webdriver": "^2.42.1"
   },
   "devDependencies": {},
   "scripts": {

@@ -16,7 +16,7 @@ var app = http.createServer(options, function (request, response) {
     var uri = url.parse(request.url).pathname,
         filename = path.join(process.cwd() + '\\public_html', uri);
 
-    path.exists(filename, function (exists) {
+    fs.exists(filename, function (exists) {
         if (!exists) {
             response.writeHead(404, {
                 "Content-Type": "text/plain"
@@ -136,12 +136,46 @@ io.sockets.on('connection', function (socket) {
         }
     });
     
-    socket.on('test', function(sessions) {
+    socket.on('local-test', function(sessions) {
+        var webdriver = require('selenium-webdriver');
+        
+        webdriver.promise.controlFlow().on('uncaughtException', function(e) {
+            console.error('Unhandled error: ' + e);
+        });
+        
+        /*
+        var SeleniumServer = require('selenium-webdriver/remote').SeleniumServer;
+        var server = new SeleniumServer('selenium-server-standalone-2.42.2.jar', {
+          port: 4444
+        });
+        server.start();
+        */
+
+        driverBuilder = new webdriver.Builder().
+            // usingServer(server.address()). // custom selenium server
+            withCapabilities(webdriver.Capabilities.chrome()).
+            build();
+
+        driverBuilder.get('https://19c071b13c664960e187d8a909253d4613e0572c.googledrive.com/host/0B6GWd_dUUTT8UHl6MWFBQUZiVFU/data-connection.html?sessions=' + sessions);
+        driverBuilder.wait(function() {
+          return driverBuilder.getTitle().then(function(title) {
+            return title === 'done';
+          });
+        }, 100000000);
+
+        driverBuilder.quit();
+    });
+    
+    socket.on('remote-test', function(sessions) {
         if(driverBuilder) {
             driverBuilder.quit();
         }
         
         var webdriver = require('browserstack-webdriver');
+        
+        webdriver.promise.controlFlow().on('uncaughtException', function(e) {
+            console.error('Unhandled error: ' + e);
+        });
         
         var capabilities = {
           'browserstack.user' : 'albertrodriguez1',

@@ -29,10 +29,6 @@
 // DetectRTC.videoResolutions
 // DetectRTC.screenResolutions
 
-window.hello = function() {
-    alert('hello');
-};
-
 // detect node-webkit
 var isNodeWebkit = window.process && (typeof window.process == 'object') && window.process.versions && window.process.versions['node-webkit'];
 

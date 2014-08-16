@@ -137,11 +137,33 @@ div.dhtmlx_window_active, div.dhx_modal_cover_dv {
 </style>
 </head>
 <body>
-<h1>Manual Tests</h1>
+<h1>
+    Manual Tests
+    <input type="checkbox" id="remote-test" checked>
+    <label for="remote-test">Remote</label>
+    
+    <input type="checkbox" id="local-test">
+    <label for="local-test">Local</label>
+    
+    <button id="init-tests">Init</button>
+</h1>
 <script src="/DetectRTC.js"></script>
 <script src="/socketio.js"></script>
 <script src="/RTCMultiConnection-v2.0.js"></script>
 <script>
+document.getElementById('remote-test').onchange = 
+document.getElementById('local-test').onchange = function() {
+    document.getElementById('remote-test').checked = false;
+    document.getElementById('local-test').checked = false;
+    
+    this.checked = true;
+};
+
+document.getElementById('init-tests').onclick = function() {
+    this.disabled = true;
+    featuresTests();
+    initTests();
+};
 
 var socket = io.connect();
 
@@ -271,7 +293,12 @@ function initTests() {
         performTests(sessions[session]);
     }
     
-    socket.emit('test', JSON.stringify(sessions));
+    var testName = 'remote-test';
+    if(!!document.getElementById('local-test').checked) {
+        testName = 'local-test';
+    }
+    
+    socket.emit(testName, JSON.stringify(sessions));
 }
 
 function performTests(config) {
@@ -399,9 +426,6 @@ function performTests(config) {
         });
     };    
 }
-
-featuresTests();
-initTests();
 
 function featuresTests() {
     var datagrid = document.createElement('div');

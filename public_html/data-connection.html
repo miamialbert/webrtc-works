@@ -1,4 +1,5 @@
 ﻿<script src="RTCMultiConnection-v2.0.js"></script>
+<title>Test</title>
 <script>
 (function () {
     var params = {},
@@ -74,7 +75,8 @@ function performTests(config) {
     
     connection.onconnected = function(event) {
         connection.sendCustomMessage('onconnected');
-        connection.close();
+        document.title = 'done';
+        // connection.close();
     };
     
     connection.onstream = function(event) {
