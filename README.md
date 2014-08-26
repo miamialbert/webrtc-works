@@ -6,7 +6,13 @@ WebRTC Browser Test
 ```
 npm install
 
-node server.js
-```
+// server-side commands
+// can be used in PuTTy
 
-and then: `http://localhost:8888/index3.html`
+// run socket.io
+cd app
+nodejs server
+
+// to run selenium server
+java -jar selenium-server-standalone-2.39.0.jar
+```

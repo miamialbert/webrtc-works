@@ -165,7 +165,7 @@ document.getElementById('init-tests').onclick = function() {
     initTests();
 };
 
-var socket = io.connect();
+var socket = io.connect('https://23.246.230.178:443/');
 
 socket.on('disconnect', function() {
     console.error('socket.io connection is disconnected.');
